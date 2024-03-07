@@ -5,43 +5,34 @@
 | CS-665       | Software Design & Patterns |
 |--------------|----------------------------|
 | Name         | Yulong Liu                 |
-| Date         | 02/016/2024                |
-| Course       | Fall / Spring / Summer     |
-| Assignment # | 2                          |
+| Date         | 03/06/2024                 |
+| Course       | Spring                     |
+| Assignment # | 3                          |
 
 # Assignment Overview
 
-This assignment is to develop a notification system that will inform drivers about delivery requests.
+This assignment involves the development of an "Email Generation" application designed to automatically generate
+customized emails for various customer segments of a company, such as Business, Returning, Frequent, New, and VIP
+customers. The system will use a base template for emails, which will be tailored according to the specific
+characteristics of each customer type.
 
 # GitHub Repository Link:
 
-https://github.com/nioliu/cs-665-assignment-2/tree/main
+https://github.com/nioliu/cs-665-assignment-3
 
 # Implementation Description
 
-The design of the Delivery System utilizes the **Observer Pattern** to create a flexible and maintainable
-structure that supports dynamic registration and notification of drivers about delivery requests.
+1. Factory Method Pattern: Enables easy addition or removal of customer types. To introduce a new customer segment, you
+   simply add a new class and adjust the factory method to recognize and instantiate it, without altering existing code.
 
-1. **Observer Pattern**:
-    - Facilitates the communication between retailers and drivers without making them directly dependent on each other,
-      enhancing modularity and reducing coupling.
-    - The `Retailer` acts as a mediator with a collection of `Subject` objects, each capable of managing its own set
-      of `Driver` observers.
-    - New `Subject` instances representing different delivery contexts can be added seamlessly, allowing for scalability
-      in the notification process.
-2. **Composition and Association**:
-    - Retailers maintain a collection of `Subject` instances, which are managed via composition within a map structure,
-      indicating ownership and lifecycle management.
-    - The `Subject` objects passed to the `Retailer` as constructor arguments represent a dependency relationship, which
-      allows for flexibility in assigning different subjects to different retailers.
-3. **Encapsulation and Abstraction**:
-    - The system encapsulates the details of the notification logic within the `Subject` and `Driver` classes, exposing
-      only the necessary interface for registering and notifying observers.
-    - Abstracts the concept of notification from the specific implementations, allowing for the `Driver` interface to be
-      implemented by various concrete driver classes with different behaviors.
-4. **Inheritance and Extensibility**:
-    - The system is designed to be extensible, where new types of drivers or notification subjects can be introduced by
-      extending the base `Driver` and `Subject` interfaces.
+2. Strategy Pattern: The Customer class acts as the context, capable of switching its EmailTemplate strategy at runtime
+   via the switchEmailTemplate() method. Each customer type upon creation sets its default EmailTemplate, such as
+   BusinessEmail for Business customers, allowing for a flexible and interchangeable email generation process.
+   Constructor Injection: In the constructors of the specific customer subclasses, the default email template is set,
+   ensuring that each type of customer starts with the appropriate email content strategy.
+
+3. Template Method Pattern: Provides a standard structure for email templates, allowing new email types to be created by
+   extending the base class and implementing the required steps, thereby promoting reuse and simplification.
 
 ## UML
 
@@ -49,107 +40,74 @@ structure that supports dynamic registration and notification of drivers about d
 
 classDiagram
 
-class Driver{
- <<interface>>
- +DriverType: enum
- +driverLicense() String
- +driverType() DriverType
- +receiveNewDeliveryRequest()
+class EmailTemplate{
+ <<abstract>>
+ +Template() String*
 }
 
-class FreelanceVan{
-    -driverLicense:String
-    -driverType:DriverType
-    +driverLicense()String
-    +driverType()DriverType
-    +receiveNewDeliveryRequest()
+class VipEmail{
+   +Template() String
 }
 
-class TaxiDriver{
-    -driverLicense:String
-    -driverType:DriverType
-    +driverLicense()String
-    +driverType()DriverType
-    +receiveNewDeliveryRequest()
+class BusinessEmail{
+	+Template() String
 }
 
-class Subject{
-    <<interface>>
-    +registerObserver()
-    +notifyObservers()
-    +removeObserver()
+class Information{
+	#id:String
+	#lastname:String
+	#firstname:String  
+	+Information()
+	+getId()String
+	+getLastname()String
+	+getFirstname()String  
 }
 
-class DeliveryRequest{
-    -driverMap : HashMap
-    +registerObserver()
-    +notifyObservers()
-    +removeObserver()
+class Customer{
+	<<abstract>>
+    #emailTemplate:EmailTemplate
+    #information:Information
+    +getEmailTemplate()String
+    +switchEmailTemplate()String
 }
 
-class Retailer{
-    <<abstract>>
-    -subjectMap : HashMap
-    +notify()
-    +removeSubject()
-    #id()enum*
-    #address()String*
+class Business{
+    +Business()
 }
 
-class Retailer1{
-    #id()enum
-    #address()String
+class Vip{
+    +Vip()
 }
 
-class Retailer2{
-    #id()enum
-    #address()String
-}
-
-class Delivery{
-    -retailer : Retailer
-    -addtionalDetail : AdditionalDeliveryDetail
-    getDeliveryDetails()String
-}
-
-class AdditionalDeliveryDetail{
-    - productInfo : String
-    - destineAddr : String
-    - fees: double
-}
-
-%% implement beverage
-Driver <|..  FreelanceVan
-Driver <|..  TaxiDriver
-%% implement condiment
-Subject <|.. DeliveryRequest
-Retailer <|-- Retailer1
-Retailer <|-- Retailer2
-%% driver dependent driver
-Subject..>Driver
-%% Delivery reuqest composit AdditionalDeliveryDetail
-Delivery..>AdditionalDeliveryDetail
-DeliveryRequest..>Delivery
-Retailer..>Subject
+Business..>Information
+Business--*BusinessEmail
+Vip..>Information
+Vip..*VipEmail
+BusinessEmail--|>EmailTemplate
+VipEmail--|>EmailTemplate
+Business--|>Customer
+Vip--|>Customer
+Customer--*EmailTemplate
+Customer--*Information
 ```
 
 ## How to use?
 
 ```java
  public void TestBasic() {
-   DeliveryRequest deliveryRequest1 = new DeliveryRequest("1"); // subject
-   Retailer1 retailer1 = new Retailer1(deliveryRequest1);
-   Driver taxiDriver1 = new TaxiDriver("123");// observer
-   Driver taxiDriver2 = new TaxiDriver("456");// observer
-   Driver taxiDriver3 = new TaxiDriver("789");// observer
-   Driver taxiDriver4 = new TaxiDriver("111");// observer
-   Driver taxiDriver5 = new TaxiDriver("222");// observer
-   Driver taxiDriver6 = new TaxiDriver("333");// observer
+    DeliveryRequest deliveryRequest1 = new DeliveryRequest("1"); // subject
+    Retailer1 retailer1 = new Retailer1(deliveryRequest1);
+    Driver taxiDriver1 = new TaxiDriver("123");// observer
+    Driver taxiDriver2 = new TaxiDriver("456");// observer
+    Driver taxiDriver3 = new TaxiDriver("789");// observer
+    Driver taxiDriver4 = new TaxiDriver("111");// observer
+    Driver taxiDriver5 = new TaxiDriver("222");// observer
+    Driver taxiDriver6 = new TaxiDriver("333");// observer
 
-   deliveryRequest1.registerObserver(taxiDriver1, taxiDriver2, taxiDriver3, taxiDriver4, taxiDriver5, taxiDriver6);
+    deliveryRequest1.registerObserver(taxiDriver1, taxiDriver2, taxiDriver3, taxiDriver4, taxiDriver5, taxiDriver6);
 
-   retailer1.notify(new Delivery.
-           AdditionalDeliveryDetail("keyboard", "999, Boston, MA", 19.99));
+    retailer1.notify(new Delivery.
+            AdditionalDeliveryDetail("keyboard", "999, Boston, MA", 19.99));
 }
 ```
 

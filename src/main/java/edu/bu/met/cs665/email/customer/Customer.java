@@ -1,5 +1,6 @@
 package edu.bu.met.cs665.email.customer;
 
+import edu.bu.met.cs665.email.Infomation.Information;
 import edu.bu.met.cs665.email.templates.Default;
 import edu.bu.met.cs665.email.templates.EmailTemplate;
 
@@ -11,15 +12,29 @@ import edu.bu.met.cs665.email.templates.EmailTemplate;
  * Description: customers template
  */
 
-public class Customer {
+public abstract class Customer {
     protected EmailTemplate emailTemplate;
+    protected Information information;
 
+    /**
+     * get the specific template
+     */
     public String getEmailTemplate() {
         if (emailTemplate == null) {
-            return new Default().Template();
+            return new Default().Template(information);
         } else {
-            return emailTemplate.Template();
+            return emailTemplate.Template(information);
         }
+    }
+
+    /**
+     * switch to another template for customer
+     * strategy pattern
+     *
+     * @param template temporary template to change
+     */
+    public void switchEmailTemplate(EmailTemplate template) {
+        this.emailTemplate = template;
     }
 }
 
